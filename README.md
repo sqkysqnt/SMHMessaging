@@ -19,6 +19,7 @@ To use the SMH Messaging library in your project, download the `SMHMessaging.h` 
 
 ```cpp
 #include "SMHMessaging.h"
+```
 
 ### Create an Instance
 
@@ -30,7 +31,7 @@ SMHMessaging senderDevice(9, 0); // Device ID 9, no group
 
 // Simulate receiving device (Device 3 in group 11)
 SMHMessaging receiverDevice(3, 11); // Device ID 3, Group ID 11
-
+```
 
 ### Create a Packet
 
@@ -60,7 +61,7 @@ if (error == MSG_NO_ERROR) {
 } else {
     Serial.printf("Error creating packet: %d\n", error);
 }
-
+```
 
 ### Handle a Packet
 
@@ -94,14 +95,14 @@ if (error == MSG_NO_ERROR) {
 } else {
     Serial.printf("Error handling packet: %d\n", error);
 }
-
+```
 ## API Reference
 
 ### Constructor
 
 ```cpp
 SMHMessaging(uint8_t deviceID, uint8_t groupID);
-
+```
 - deviceID: Unique identifier for the device (1-255).
 - groupID: Group identifier for the device (1-255).
 
