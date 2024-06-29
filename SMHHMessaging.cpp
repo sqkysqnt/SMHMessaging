@@ -2,22 +2,39 @@
 
 // Constructor initializes deviceID and groupID with human-readable values
 SMHMessaging::SMHMessaging(uint8_t deviceID, uint8_t groupID)
-    : deviceID(deviceID), groupID(groupID) {}
+    : deviceID(deviceID), groupID(groupID), createdPacketLength(0) {}
 
-int SMHMessaging::createPacket(uint8_t dest_addr, uint8_t msg_type, const uint8_t* payload, size_t payload_length, uint8_t* packet, size_t& packet_length) {
+int SMHMessaging::createPacket(uint8_t userID, uint8_t groupID, uint8_t packetType, const uint8_t* payload) {
+    if (userID != 0 && groupID != 0) {
+        return MSG_INVALID_ADDRESS; // Both userID and groupID are filled
+    }
+    
+    uint8_t dest_addr = userID != 0 ? userID : groupID;
+    size_t payload_length = 0;
+
+    while (payload[payload_length] != '\0') { // Calculate payload length
+        payload_length++;
+    }
+    
     if (payload_length > 255) return MSG_INVALID_PAYLOAD_LENGTH;
     
-    packet[0] = dest_addr;
-    packet[1] = deviceID;
-    packet[2] = msg_type;
-    packet[3] = payload_length;
+    createdPacket[0] = dest_addr;
+    createdPacket[1] = deviceID;
+    createdPacket[2] = packetType;
+    createdPacket[3] = payload_length;
 
     for (size_t i = 0; i < payload_length; ++i) {
-        packet[4 + i] = payload[i];
+        createdPacket[4 + i] = payload[i];
     }
 
-    packet_length = 4 + payload_length;
+    createdPacketLength = 4 + payload_length;
+    
     return MSG_NO_ERROR;
+}
+
+void SMHMessaging::getCreatedPacket(uint8_t*& packet, size_t& packet_length) {
+    packet = createdPacket;
+    packet_length = createdPacketLength;
 }
 
 int SMHMessaging::parsePacket(const uint8_t* packet, size_t packet_length, uint8_t& dest_addr, uint8_t& src_addr, uint8_t& msg_type, uint8_t* payload, size_t& payload_length) {
@@ -44,8 +61,13 @@ bool SMHMessaging::isPacketForMe(const uint8_t* packet, size_t packet_length) {
     return dest_addr == deviceID || dest_addr == groupID;
 }
 
-int SMHMessaging::handlePacket(const uint8_t* packet, size_t packet_length) {
+int SMHMessaging::handlePacket(const uint8_t* packet, size_t packet_length, uint8_t* return_packet, size_t& return_packet_length) {
     if (!isPacketForMe(packet, packet_length)) return MSG_NO_ERROR;
+
+    for (size_t i = 0; i < packet_length; ++i) {
+        return_packet[i] = packet[i];
+    }
+    return_packet_length = packet_length;
 
     uint8_t dest_addr, src_addr, msg_type;
     uint8_t payload[256];

@@ -10,7 +10,8 @@ enum SMHMessagingError {
     MSG_NO_ERROR = 0,
     MSG_PACKET_TOO_SHORT,
     MSG_INVALID_PAYLOAD_LENGTH,
-    MSG_UNKNOWN_MESSAGE_TYPE
+    MSG_UNKNOWN_MESSAGE_TYPE,
+    MSG_INVALID_ADDRESS
 };
 
 class SMHMessaging {
@@ -18,15 +19,16 @@ public:
     // Constructor with human-readable deviceID and groupID (1 through 255)
     SMHMessaging(uint8_t deviceID, uint8_t groupID);
     
-    // Methods to create and parse packets
-    int createPacket(uint8_t dest_addr, uint8_t msg_type, const uint8_t* payload, size_t payload_length, uint8_t* packet, size_t& packet_length);
+    // Method to create packets
+    int createPacket(uint8_t userID, uint8_t groupID, uint8_t packetType, const uint8_t* payload);
+    
+    // Methods to parse and handle packets
     int parsePacket(const uint8_t* packet, size_t packet_length, uint8_t& dest_addr, uint8_t& src_addr, uint8_t& msg_type, uint8_t* payload, size_t& payload_length);
-    
-    // Method to check if a packet is for this device or its group
     bool isPacketForMe(const uint8_t* packet, size_t packet_length);
-    
-    // Method to handle incoming packets
-    int handlePacket(const uint8_t* packet, size_t packet_length);
+    int handlePacket(const uint8_t* packet, size_t packet_length, uint8_t* return_packet, size_t& return_packet_length);
+
+    // Method to get the created packet
+    void getCreatedPacket(uint8_t*& packet, size_t& packet_length);
 
 protected:
     // Virtual methods for handling different types of messages
@@ -39,6 +41,8 @@ protected:
 private:
     uint8_t deviceID; // Device ID (1 through 255)
     uint8_t groupID;  // Group ID (1 through 255)
+    uint8_t createdPacket[256]; // Buffer for created packet
+    size_t createdPacketLength; // Length of created packet
 };
 
 #endif // SMHMESSAGING_H
